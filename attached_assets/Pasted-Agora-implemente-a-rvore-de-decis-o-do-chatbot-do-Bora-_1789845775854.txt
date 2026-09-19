@@ -1,0 +1,143 @@
+Agora implemente a árvore de decisão do chatbot do Bora Treinar.
+
+OBJETIVO:
+O chatbot deve identificar a intenção do usuário, resolver dúvidas simples e encaminhar situações que exigem atendimento humano.
+
+PRINCIPAL REGRA:
+Nunca pressionar o aluno a permanecer.
+O objetivo é entender o problema e oferecer alternativas disponíveis.
+
+========================
+INÍCIO
+========================
+
+“Como podemos ajudar?”
+
+├── QUERO CONHECER A ACADEMIA
+│   ├── Modalidades
+│   ├── Aulas
+│   ├── Estrutura
+│   ├── Espaço Kids
+│   ├── Planos
+│   └── Aula experimental
+│
+│   → Se demonstrar interesse
+│   → Capturar lead
+│
+├── QUERO FAZER AULA EXPERIMENTAL
+│   → Nome
+│   → WhatsApp
+│   → Objetivo
+│   → Melhor horário
+│   → Registrar lead
+│   → Encaminhar para equipe
+│
+├── SOU ALUNO
+│   ├── Meu treino
+│   ├── Reservar aula
+│   ├── Falar com professor
+│   ├── Alterar horário
+│   ├── Pausar plano
+│   ├── Reclamação
+│   └── Estou pensando em cancelar
+│
+└── PRECISO DE AJUDA
+    → identificar assunto
+    → resolver se possível
+    → encaminhar para humano quando necessário
+
+
+========================
+FLUXO DE CANCELAMENTO
+========================
+
+Aluno:
+“Estou pensando em cancelar.”
+
+Chat:
+“Entendi. Antes de qualquer coisa, queremos entender o que está dificultando sua continuidade. O que aconteceu?”
+
+Opções:
+
+├── FALTA DE TEMPO
+│   → oferecer horários alternativos
+│   → oferecer treino rápido, se disponível
+│   → perguntar se deseja ajuda da equipe
+│
+├── PREÇO
+│   → verificar planos/alternativas configuradas
+│   → oferecer downgrade se disponível
+│   → encaminhar para equipe
+│
+├── VIAGEM
+│   → verificar possibilidade de pausa
+│   → encaminhar para equipe
+│
+├── NÃO ESTOU VENDO RESULTADOS
+│   → explicar que resultados variam
+│   → oferecer reavaliação
+│   → contato com professor
+│   → registrar alerta
+│
+├── HORÁRIO
+│   → apresentar horários disponíveis
+│   → oferecer alternativa
+│
+├── PROFESSOR
+│   → registrar feedback
+│   → encaminhar para gestão
+│
+├── ATENDIMENTO
+│   → registrar reclamação
+│   → prioridade alta
+│   → encaminhar para responsável
+│
+├── ESTRUTURA
+│   → registrar feedback
+│   → encaminhar para gestão
+│
+└── OUTRO
+    → campo aberto
+    → registrar motivo
+    → encaminhar para equipe
+
+
+========================
+FINALIZAÇÃO
+========================
+
+Depois de cada fluxo:
+
+“Obrigado por nos contar. 💚
+Registramos sua solicitação e nossa equipe poderá continuar o atendimento.”
+
+Criar alerta quando houver:
+- intenção de cancelamento;
+- reclamação;
+- insatisfação;
+- pedido de pausa;
+- problema com professor;
+- problema de atendimento;
+- percepção de falta de resultado.
+
+Cada alerta deve possuir:
+- aluno
+- categoria
+- prioridade
+- data
+- status
+- responsável
+
+Status:
+NOVO
+EM ATENDIMENTO
+RESOLVIDO
+
+Prioridades:
+BAIXA
+MÉDIA
+ALTA
+
+IMPORTANTE:
+Não inventar condições comerciais.
+As alternativas devem vir das configurações do sistema.

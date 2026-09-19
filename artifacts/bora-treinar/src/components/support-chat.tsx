@@ -3,6 +3,7 @@ import {
   ArrowLeft,
   ArrowRight,
   Bot,
+  ChevronDown,
   CircleHelp,
   Headphones,
   MessageCircle,
@@ -15,13 +16,18 @@ import {
 type Author = 'assistant' | 'user';
 type ChatScreen =
   | 'home'
+  | 'academy'
   | 'new-client'
   | 'student'
+  | 'help'
   | 'lead'
   | 'retention-reason'
   | 'retention-data'
+  | 'issue-data'
   | 'human';
 type LeadField = 'name' | 'whatsapp' | 'goal' | 'time';
+type AlertPriority = 'BAIXA' | 'MÉDIA' | 'ALTA';
+type AlertStatus = 'NOVO' | 'EM ATENDIMENTO' | 'RESOLVIDO';
 
 type ChatMessage = {
   id: string;
@@ -50,17 +56,26 @@ const rootChoices: Choice[] = [
 ];
 
 const clientChoices: Choice[] = [
-  { id: 'academy', label: 'Academia' },
+  { id: 'wellhub', label: 'Wellhub' },
+  { id: 'totalpass', label: 'TotalPass' },
+  { id: 'location', label: 'Localização' },
+  { id: 'contact', label: 'Contato' },
+];
+
+const academyChoices: Choice[] = [
   { id: 'modalities', label: 'Modalidades' },
   { id: 'classes', label: 'Aulas' },
   { id: 'structure', label: 'Estrutura' },
   { id: 'kids', label: 'Espaço Kids' },
   { id: 'plans', label: 'Planos' },
   { id: 'trial', label: 'Aula experimental' },
-  { id: 'wellhub', label: 'Wellhub' },
-  { id: 'totalpass', label: 'TotalPass' },
-  { id: 'location', label: 'Localização' },
-  { id: 'contact', label: 'Contato' },
+];
+
+const helpChoices: Choice[] = [
+  { id: 'academy-question', label: 'Dúvida sobre a academia' },
+  { id: 'student-help', label: 'Sou aluno' },
+  { id: 'complaint', label: 'Tenho uma reclamação' },
+  { id: 'human', label: 'Falar com humano' },
 ];
 
 const studentChoices: Choice[] = [
@@ -75,12 +90,49 @@ const studentChoices: Choice[] = [
 ];
 
 const retentionChoices: Choice[] = [
-  { id: 'finance', label: 'Motivo financeiro' },
   { id: 'time', label: 'Falta de tempo' },
-  { id: 'routine', label: 'Não consigo manter a rotina' },
-  { id: 'experience', label: 'Treino ou atendimento' },
-  { id: 'other', label: 'Outro motivo' },
+  { id: 'price', label: 'Preço' },
+  { id: 'trip', label: 'Viagem' },
+  { id: 'results', label: 'Não estou vendo resultados' },
+  { id: 'schedule', label: 'Horário' },
+  { id: 'professor', label: 'Professor' },
+  { id: 'service', label: 'Atendimento' },
+  { id: 'structure', label: 'Estrutura' },
+  { id: 'other', label: 'Outro' },
 ];
+
+const retentionPriorities: Record<string, AlertPriority> = {
+  time: 'MÉDIA',
+  price: 'MÉDIA',
+  trip: 'BAIXA',
+  results: 'MÉDIA',
+  schedule: 'MÉDIA',
+  professor: 'MÉDIA',
+  service: 'ALTA',
+  structure: 'MÉDIA',
+  other: 'MÉDIA',
+};
+
+const retentionReplies: Record<string, string> = {
+  time:
+    'Podemos olhar alternativas de rotina, mas não há horários alternativos ou treino rápido configurados aqui. A equipe pode verificar o que está disponível para você.',
+  price:
+    'Entendo. Não há planos ou condições comerciais configurados neste atendimento, então não vou inventar uma alternativa. A equipe pode verificar as opções disponíveis.',
+  trip:
+    'Entendi. A possibilidade de pausa depende do seu plano e precisa ser confirmada pela equipe. Posso registrar seu pedido para esse retorno.',
+  results:
+    'Cada corpo responde de um jeito e em um tempo diferente. Podemos registrar um alerta para uma reavaliação e uma conversa com o professor, sem pressionar você a continuar.',
+  schedule:
+    'Podemos procurar uma alternativa, mas a grade atual não está configurada aqui. A equipe pode conferir os horários disponíveis.',
+  professor:
+    'Obrigado por falar. Vou registrar seu feedback para que a gestão e o professor responsável possam acompanhar.',
+  service:
+    'Sinto muito que o atendimento não tenha funcionado como deveria. Vou registrar a reclamação com prioridade alta para a equipe responsável.',
+  structure:
+    'Obrigado pelo feedback. Vou registrar o ponto sobre a estrutura para a gestão acompanhar.',
+  other:
+    'Tudo bem. Você pode contar um pouco mais no próximo passo. Vou registrar o motivo sem tentar direcionar sua decisão.',
+};
 
 const clientReplies: Record<string, string> = {
   academy:
@@ -187,6 +239,16 @@ function SupportChat() {
     name: '',
     whatsapp: '',
   });
+  const [retentionPriority, setRetentionPriority] =
+    useState<AlertPriority>('MÉDIA');
+  const [issueCategory, setIssueCategory] = useState('');
+  const [issuePriority, setIssuePriority] =
+    useState<AlertPriority>('MÉDIA');
+  const [issueStep, setIssueStep] = useState<'name' | 'whatsapp'>('name');
+  const [issueDraft, setIssueDraft] = useState({
+    name: '',
+    whatsapp: '',
+  });
   const [draft, setDraft] = useState('');
   const endOfMessagesRef = useRef<HTMLDivElement>(null);
 
@@ -222,6 +284,11 @@ function SupportChat() {
     setRetentionReason('');
     setRetentionStep('name');
     setRetentionDraft({ name: '', whatsapp: '' });
+    setRetentionPriority('MÉDIA');
+    setIssueCategory('');
+    setIssuePriority('MÉDIA');
+    setIssueStep('name');
+    setIssueDraft({ name: '', whatsapp: '' });
     setDraft('');
   };
 
@@ -234,6 +301,20 @@ function SupportChat() {
     reply('Perfeito. Para começar, me passa seu nome?');
   };
 
+  const startIssueCapture = (
+    category: string,
+    priority: AlertPriority,
+    openingMessage: string,
+  ) => {
+    setError('');
+    setIssueCategory(category);
+    setIssuePriority(priority);
+    setIssueStep('name');
+    setIssueDraft({ name: '', whatsapp: '' });
+    setScreen('issue-data');
+    reply(`${openingMessage} Para registrar, qual é o seu nome?`);
+  };
+
   const handleRootChoice = (choice: Choice) => {
     setError('');
     addMessage('user', choice.label);
@@ -243,26 +324,58 @@ function SupportChat() {
       return;
     }
     if (choice.id === 'help') {
-      setScreen('human');
-      reply('Claro. Posso ajudar com informações ou chamar a equipe para continuar com você.');
+      setScreen('help');
+      reply('Claro. Primeiro vou identificar o assunto para resolver o que for possível por aqui.');
       return;
     }
     if (choice.id === 'human') {
       startLeadCapture('atendimento com a equipe');
       return;
     }
-    const mappedChoice =
-      choice.id === 'trial' || choice.id === 'classes' || choice.id === 'plans'
-        ? choice.id
-        : 'academy';
-    setScreen('new-client');
-    reply(clientReplies[mappedChoice]);
+    if (choice.id === 'trial') {
+      startLeadCapture('aula experimental');
+      return;
+    }
+    setScreen('academy');
+    reply(
+      choice.id === 'academy'
+        ? 'Claro. O que você quer conhecer primeiro?'
+        : clientReplies[choice.id],
+    );
+  };
+
+  const handleHelpChoice = (choice: Choice) => {
+    setError('');
+    addMessage('user', choice.label);
+    if (choice.id === 'academy-question') {
+      setScreen('academy');
+      reply('Posso ajudar com informações simples sobre a academia. O que você quer saber?');
+      return;
+    }
+    if (choice.id === 'student-help') {
+      setScreen('student');
+      reply('Boa! Como posso ajudar no seu treino hoje?');
+      return;
+    }
+    if (choice.id === 'complaint') {
+      startIssueCapture(
+        'reclamação',
+        'ALTA',
+        'Sinto muito que algo não tenha saído bem. Vou registrar isso com prioridade alta para a equipe responsável.',
+      );
+      return;
+    }
+    startLeadCapture('atendimento humano');
   };
 
   const handleClientChoice = (choice: Choice) => {
     setError('');
     addMessage('user', choice.label);
-    setScreen('new-client');
+    if (choice.id === 'trial') {
+      startLeadCapture('aula experimental');
+      return;
+    }
+    setScreen(choice.id === 'academy' ? 'academy' : 'new-client');
     reply(clientReplies[choice.id] ?? 'Posso pedir ajuda da equipe com essa informação.');
   };
 
@@ -271,7 +384,35 @@ function SupportChat() {
     addMessage('user', choice.label);
     if (choice.id === 'cancel') {
       setScreen('retention-reason');
-      reply('Entendi. Antes de qualquer decisão, quero ouvir você. O que está pesando agora?');
+      reply('Entendi. Antes de qualquer decisão, queremos entender o que está dificultando sua continuidade. O que aconteceu?');
+      return;
+    }
+    if (choice.id === 'complaint') {
+      startIssueCapture(
+        'reclamação',
+        'ALTA',
+        'Sinto muito que algo não tenha saído bem. Vou registrar sua reclamação com prioridade alta.',
+      );
+      return;
+    }
+    if (choice.id === 'coach') {
+      startIssueCapture(
+        'problema com professor',
+        'MÉDIA',
+        'Obrigado por falar. Vou registrar seu feedback para a gestão acompanhar.',
+      );
+      return;
+    }
+    if (choice.id === 'pause-plan') {
+      startIssueCapture(
+        'pedido de pausa',
+        'BAIXA',
+        'Entendi. A possibilidade de pausa depende do seu plano e precisa ser confirmada pela equipe.',
+      );
+      return;
+    }
+    if (choice.id === 'student-team') {
+      startLeadCapture('atendimento de aluno');
       return;
     }
     setScreen('student');
@@ -281,16 +422,21 @@ function SupportChat() {
   const handleRetentionReason = (choice: Choice) => {
     setError('');
     setRetentionReason(choice.label);
+    setRetentionPriority(retentionPriorities[choice.id] ?? 'MÉDIA');
     addMessage('user', choice.label);
     setScreen('retention-data');
     setRetentionStep('name');
-    reply('Obrigado por contar. Vou registrar isso com cuidado. Qual é o seu nome?');
+    reply(
+      `${retentionReplies[choice.id]} Obrigado por contar. Qual é o seu nome?`,
+    );
   };
 
   const saveLead = () => {
     const record = {
       ...leadDraft,
       intent: leadContext,
+      status: 'NOVO' as AlertStatus,
+      responsible: 'A definir pela equipe',
       capturedAt: new Date().toISOString(),
     };
     try {
@@ -302,6 +448,32 @@ function SupportChat() {
       return true;
     } catch {
       setError('Não consegui salvar os dados neste dispositivo. Tente novamente.');
+      return false;
+    }
+  };
+
+  const saveAlert = (
+    student: { name: string; whatsapp: string },
+    category: string,
+    priority: AlertPriority,
+  ) => {
+    const record = {
+      aluno: student,
+      categoria: category,
+      prioridade: priority,
+      data: new Date().toISOString(),
+      status: 'NOVO' as AlertStatus,
+      responsavel: 'A definir pela equipe',
+    };
+    try {
+      const current = readStoredItems('bora-treinar-chat-alerts');
+      window.localStorage.setItem(
+        'bora-treinar-chat-alerts',
+        JSON.stringify([...current, record]),
+      );
+      return true;
+    } catch {
+      setError('Não consegui registrar o alerta agora. Tente novamente em instantes.');
       return false;
     }
   };
@@ -319,7 +491,26 @@ function SupportChat() {
         'bora-treinar-chat-retention',
         JSON.stringify([...current, record]),
       );
-      return true;
+      return saveAlert(retentionDraft, `intenção de cancelamento — ${retentionReason}`, retentionPriority);
+    } catch {
+      setError('Não consegui registrar agora. Tente novamente em instantes.');
+      return false;
+    }
+  };
+
+  const saveIssue = () => {
+    const record = {
+      intent: issueCategory,
+      student: issueDraft,
+      recordedAt: new Date().toISOString(),
+    };
+    try {
+      const current = readStoredItems('bora-treinar-chat-issues');
+      window.localStorage.setItem(
+        'bora-treinar-chat-issues',
+        JSON.stringify([...current, record]),
+      );
+      return saveAlert(issueDraft, issueCategory, issuePriority);
     } catch {
       setError('Não consegui registrar agora. Tente novamente em instantes.');
       return false;
@@ -349,7 +540,7 @@ function SupportChat() {
     } else if (saveLead()) {
       setScreen('home');
       reply(
-        'Tudo certo. Seu interesse ficou registrado neste dispositivo para dar continuidade ao atendimento. Quando o CRM estiver conectado, esse pedido poderá seguir automaticamente para a equipe.',
+        'Obrigado por nos contar. 💚 Registramos sua solicitação e nossa equipe poderá continuar o atendimento. Por enquanto, o registro fica salvo neste dispositivo; quando o CRM estiver conectado, ele poderá seguir automaticamente para a equipe.',
         undefined,
         560,
       );
@@ -378,7 +569,36 @@ function SupportChat() {
     if (saveRetention()) {
       setScreen('student');
       reply(
-        'Registrei sua intenção de cancelamento, o motivo e seus dados neste dispositivo. A equipe pode continuar esse atendimento com mais contexto.',
+        'Obrigado por nos contar. 💚 Registramos sua solicitação e nossa equipe poderá continuar o atendimento.',
+        undefined,
+        560,
+      );
+    }
+  };
+
+  const handleIssueSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setError('');
+    const value = issueDraft[issueStep].trim();
+    if (!value) {
+      setError(
+        issueStep === 'name'
+          ? 'Preencha seu nome para continuar.'
+          : 'Preencha seu WhatsApp para registrar o pedido.',
+      );
+      return;
+    }
+    addMessage('user', value);
+    setDraft('');
+    if (issueStep === 'name') {
+      setIssueStep('whatsapp');
+      reply('Obrigado. Agora me passa seu WhatsApp?');
+      return;
+    }
+    if (saveIssue()) {
+      setScreen('student');
+      reply(
+        'Obrigado por nos contar. 💚 Registramos sua solicitação e nossa equipe poderá continuar o atendimento.',
         undefined,
         560,
       );
@@ -391,6 +611,8 @@ function SupportChat() {
       setLeadDraft((current) => ({ ...current, [leadStep]: value }));
     } else if (screen === 'retention-data') {
       setRetentionDraft((current) => ({ ...current, [retentionStep]: value }));
+    } else if (screen === 'issue-data') {
+      setIssueDraft((current) => ({ ...current, [issueStep]: value }));
     }
   };
 
@@ -398,11 +620,19 @@ function SupportChat() {
     setError('');
     if (screen === 'home') return;
     if (screen === 'lead' || screen === 'human') {
-      setScreen('new-client');
+      setScreen('academy');
       return;
     }
-    if (screen === 'retention-data' || screen === 'retention-reason') {
+    if (
+      screen === 'retention-data' ||
+      screen === 'retention-reason' ||
+      screen === 'issue-data'
+    ) {
       setScreen('student');
+      return;
+    }
+    if (screen === 'new-client') {
+      setScreen('academy');
       return;
     }
     setScreen('home');
@@ -411,27 +641,38 @@ function SupportChat() {
   const choices =
     screen === 'home'
       ? rootChoices
+      : screen === 'academy'
+        ? academyChoices
       : screen === 'new-client'
         ? clientChoices
-        : screen === 'student'
-          ? studentChoices
-          : screen === 'retention-reason'
-            ? retentionChoices
-            : [];
+          : screen === 'student'
+            ? studentChoices
+            : screen === 'help'
+              ? helpChoices
+              : screen === 'retention-reason'
+                ? retentionChoices
+                : [];
 
   const inputLabel =
     screen === 'lead'
       ? `Digite ${leadFieldLabels[leadStep]}`
+      : screen === 'issue-data'
+        ? `Digite ${issueStep === 'name' ? 'seu nome' : 'seu WhatsApp'}`
       : `Digite ${retentionStep === 'name' ? 'seu nome' : 'seu WhatsApp'}`;
   const inputPlaceholder =
     screen === 'lead'
       ? leadPlaceholders[leadStep]
+      : screen === 'issue-data'
+        ? issueStep === 'name'
+          ? 'Como podemos te chamar?'
+          : '(00) 00000-0000'
       : retentionStep === 'name'
         ? 'Como podemos te chamar?'
         : '(00) 00000-0000';
   const isWhatsApp =
     (screen === 'lead' && leadStep === 'whatsapp') ||
-    (screen === 'retention-data' && retentionStep === 'whatsapp');
+    (screen === 'retention-data' && retentionStep === 'whatsapp') ||
+    (screen === 'issue-data' && issueStep === 'whatsapp');
 
   return (
     <>
@@ -542,8 +783,18 @@ function SupportChat() {
               </div>
             )}
 
-            {(screen === 'lead' || screen === 'retention-data') && (
-              <form onSubmit={screen === 'lead' ? handleLeadSubmit : handleRetentionSubmit}>
+            {(screen === 'lead' ||
+              screen === 'retention-data' ||
+              screen === 'issue-data') && (
+              <form
+                onSubmit={
+                  screen === 'lead'
+                    ? handleLeadSubmit
+                    : screen === 'retention-data'
+                      ? handleRetentionSubmit
+                      : handleIssueSubmit
+                }
+              >
                 <label
                   htmlFor="chat-input"
                   className="mb-2 block text-xs font-bold text-[#123c32]"
@@ -599,6 +850,7 @@ function SupportChat() {
 
             {screen !== 'lead' &&
               screen !== 'retention-data' &&
+              screen !== 'issue-data' &&
               choices.length > 0 && (
                 <div className="flex max-h-32 flex-wrap gap-2 overflow-y-auto">
                   {choices.map((choice) => (
@@ -608,7 +860,12 @@ function SupportChat() {
                       disabled={isTyping}
                       onClick={() => {
                         if (screen === 'home') handleRootChoice(choice);
-                        else if (screen === 'new-client') handleClientChoice(choice);
+                        else if (screen === 'help') handleHelpChoice(choice);
+                        else if (
+                          screen === 'academy' ||
+                          screen === 'new-client'
+                        )
+                          handleClientChoice(choice);
                         else if (screen === 'student') handleStudentChoice(choice);
                         else handleRetentionReason(choice);
                       }}
@@ -625,7 +882,19 @@ function SupportChat() {
                 </div>
               )}
 
-            {screen === 'new-client' && !isTyping && (
+            {screen === 'academy' && !isTyping && (
+              <button
+                type="button"
+                onClick={() => setScreen('new-client')}
+                className="mt-3 flex w-full items-center justify-center gap-2 rounded-full border border-[#123c32]/15 px-4 py-3 text-sm font-bold text-[#123c32] transition-colors hover:bg-[#e7ede4]"
+                data-testid="button-chat-more-info"
+              >
+                Ver mais informações
+                <ChevronDown size={16} />
+              </button>
+            )}
+
+            {(screen === 'academy' || screen === 'new-client') && !isTyping && (
               <button
                 type="button"
                 onClick={() => startLeadCapture('interesse comercial')}
@@ -667,7 +936,16 @@ function SupportChat() {
               </p>
             )}
 
-            {screen === 'lead' || screen === 'retention-data' ? (
+            {(screen === 'issue-data' || screen === 'retention-data') &&
+              !isTyping && (
+                <p className="mt-3 text-center text-[11px] leading-relaxed text-[#8a918d]">
+                  O registro fica salvo neste dispositivo por enquanto.
+                </p>
+              )}
+
+            {screen === 'lead' ||
+            screen === 'retention-data' ||
+            screen === 'issue-data' ? (
               <button
                 type="button"
                 onClick={goBack}
