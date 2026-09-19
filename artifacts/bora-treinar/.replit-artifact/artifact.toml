@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "Bora Treinar"
+description = "Landing page premium e responsiva para a academia Bora Treinar, com foco em comunidade, acompanhamento, consistência e conversão para aulas experimentais."
+version = "1.0.0"
+id = "artifacts/bora-treinar"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 19293
+
+[services.development]
+run = "pnpm --filter @workspace/bora-treinar run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/bora-treinar", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/bora-treinar/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "19293"
+BASE_PATH = "/"

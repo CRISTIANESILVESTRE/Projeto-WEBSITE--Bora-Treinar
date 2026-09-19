@@ -1,0 +1,136 @@
+Crie um website moderno, responsivo e profissional para uma academia chamada Bora Treinar.
+
+Objetivo
+
+O site deve posicionar o Bora Treinar como uma academia que vai além do treino: oferece acompanhamento, comunidade, tecnologia e motivação para ajudar o aluno a manter consistência e não abandonar a academia após os primeiros meses.
+
+Público
+
+Adultos de diferentes níveis de experiência, iniciantes, pessoas buscando emagrecimento, hipertrofia, condicionamento e qualidade de vida, incluindo pais/mães e usuários de Wellhub/TotalPass.
+
+Identidade visual
+
+Utilize uma estética fitness moderna, urbana, energética e acolhedora, evitando o visual genérico de academia.
+
+Paleta:
+
+Verde profundo: #123C32
+
+Verde elétrico: #B8F500
+
+Grafite: #171A19
+
+Off-white: #F5F7F2
+
+Amarelo energia: #FFC83D
+
+Cinza: #8A918D
+
+Use tipografia moderna, forte e legível, bastante espaço em branco, cantos levemente arredondados, microinterações sutis e alto contraste.
+
+Estrutura do site
+
+Header
+Logo Bora Treinar, menu: Início, Modalidades, Aulas, Estrutura, Bora Família, Sobre e Contato.
+CTA destacado: “Bora começar”.
+
+Hero
+Headline:
+“Sua rotina. Seu objetivo. Seu ritmo.”
+Subheadline:
+“Mais do que uma academia. Uma experiência que acompanha você.”
+CTAs: “Conheça o Bora Treinar” e “Agende uma aula experimental”.
+Utilize imagem/vídeo de pessoas treinando de forma natural e diversa.
+
+Diferencial
+Apresente os pilares:
+
+Acompanhamento personalizado
+
+Professores especializados
+
+Aulas coletivas
+
+Tecnologia e aplicativo
+
+Comunidade
+
+Bora Points
+
+Espaço Kids
+
+Jornada Bora 90
+Mostrar visualmente:
+Bora Começar → Bora Evoluir → Bora Continuar
+Explicar que o aluno recebe acompanhamento durante os primeiros 90 dias.
+
+Modalidades
+Cards para musculação, funcional, HIIT, mobilidade e aulas coletivas. Cada card deve possuir imagem, descrição curta e CTA.
+
+Bora App
+Criar uma seção apresentando o futuro aplicativo:
+“Seu treino, sua evolução e sua motivação em um só lugar.”
+Mostrar mockups de telas com:
+
+Meu treino
+
+Evolução
+
+Bora Points
+
+Desafios
+
+Bora Saber
+
+Bora Família
+Apresentar o conceito de espaço kids e soluções para alunos que possuem filhos.
+
+Bora Points
+Seção de gamificação mostrando como frequência, desafios e participação geram pontos e recompensas.
+
+Bora Saber
+Mostrar conteúdos rápidos sobre treino, corpo, recuperação, hábitos e resultados.
+
+Depoimentos
+Criar seção para depoimentos de alunos, com visual autêntico e sem exageros.
+
+Planos
+Cards de planos com CTA para contato/contratação. Incluir opção de informar utilização via Wellhub/TotalPass sem criar informações de preços que não foram fornecidas.
+
+Localização e contato
+Endereço como campo editável, mapa placeholder, WhatsApp, Instagram e horários de funcionamento.
+
+CTA final
+Headline:
+“Bora começar?”
+Texto:
+“Seu próximo treino pode começar hoje.”
+Botão: “Quero treinar”.
+
+Boas práticas
+
+Mobile-first e totalmente responsivo.
+
+Excelente performance e acessibilidade.
+
+SEO básico.
+
+CTAs claros e consistentes.
+
+Navegação simples.
+
+Componentes reutilizáveis.
+
+Não inventar preços, endereço, horários, depoimentos ou informações comerciais.
+
+Utilizar placeholders editáveis quando informações reais não forem fornecidas.
+
+Criar estados de hover, loading e feedback para botões e formulários.
+
+Formulário de contato simples com nome, WhatsApp, objetivo e melhor horário para contato.
+
+Preparar a estrutura para futura integração com CRM, WhatsApp e aplicativo.
+
+O design deve transmitir energia, pertencimento, evolução e proximidade, e não apenas estética de academia.
+
+Crie uma experiência visual premium, moderna e comercial, com foco em conversão de visitantes em aulas experimentais e novos alunos.
